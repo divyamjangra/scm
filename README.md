@@ -1,8 +1,8 @@
 
-|- **hello**|
-|- ram|
-| - _radhy sayam_|
-|- ***Bold Italic***|
+-|- **hello**|
+-|- ram|
+-| - _radhy sayam_|
+-|- ***Bold Italic***|
   ```python
   print("Hello,World!")
   
