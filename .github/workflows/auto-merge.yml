@@ -32,14 +32,19 @@ jobs:
             npm install
           fi
 
-      # Step 4: Run tests (optional but recommended)
+      # Step 4: Run Tests (optional but recommended)
       - name: Run Tests
         run: |
           if [ -f package.json ]; then
             npm test
           fi
 
-      # Step 5: Auto-merge the pull request if checks pass
+      # Step 5: Ensure the repository is in a clean state and fetch latest changes
+      - name: Fetch all branches
+        run: |
+          git fetch --all
+
+      # Step 6: Auto-merge the pull request if checks pass
       - name: Auto-Merge PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,9 +53,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Merge the pull request
-          git checkout ${{ github.head_ref }}
-          git merge ${{ github.base_ref }}
+          # Checkout the base branch (target branch, e.g., main)
+          git checkout ${{ github.base_ref }}
+
+          # Merge the pull request source branch into the target branch
+          git merge --no-ff ${{ github.head_ref }}
 
           # Push the changes back to the base branch
           git push origin ${{ github.base_ref }}
