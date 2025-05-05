@@ -1,16 +1,24 @@
-name: Instant Auto Merge PR
+name: PR Auto-Merge
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  auto-merge:
+  merge:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Auto Merge PR
-        uses: pascalgn/automerge-action@v0.15.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: merge   # Can also be "squash" or "rebase"
-          MERGE_LABELS: ""      # Leave blank = no label required
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up GitHub CLI
+      uses: github-cli/gh-actions@v2
+
+    - name: Enable auto merge
+      run: |
+        echo merge-method=$(echo "merge" | tr '[:upper:]' '[:lower:]') >> $GITHUB_OUTPUT
+
+    - name: Merge Pull Request
+      run: |
+        gh pr merge -R "divyamjangra/scm" --merge --auto ""
