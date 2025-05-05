@@ -1,0 +1,16 @@
+name: Auto Merge PR
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+jobs:
+  automerge:
+    if: github.event.label.name == 'automerge'  # Only if 'automerge' label is added
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-merge the PR
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
