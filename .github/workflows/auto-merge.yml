@@ -2,23 +2,55 @@ name: PR Auto-Merge
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
-  merge:
+  auto-merge:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # Ensure full repository is checked out, not just a shallow clone
+          fetch-depth: 0
 
-    - name: Set up GitHub CLI
-      uses: github-cli/gh-actions@v2
+      # Step 2: Setup Node.js (if applicable for your repository)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Use the Node.js version appropriate for your project
 
-    - name: Enable auto merge
-      run: |
-        echo merge-method=$(echo "merge" | tr '[:upper:]' '[:lower:]') >> $GITHUB_OUTPUT
+      # Step 3: Install dependencies (if using Node.js or a similar package manager)
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          fi
 
-    - name: Merge Pull Request
-      run: |
-        gh pr merge -R "divyamjangra/scm" --merge --auto ""
+      # Step 4: Run tests (optional but recommended)
+      - name: Run Tests
+        run: |
+          if [ -f package.json ]; then
+            npm test
+          fi
+
+      # Step 5: Auto-merge the pull request if checks pass
+      - name: Auto-Merge PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Ensure the repository is in a clean state
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Merge the pull request
+          git checkout ${{ github.head_ref }}
+          git merge ${{ github.base_ref }}
+
+          # Push the changes back to the base branch
+          git push origin ${{ github.base_ref }}
